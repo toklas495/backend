@@ -8,9 +8,11 @@ exports.up = async (knex) => {
     if(!isExist){
         return knex.schema.createTable("teacher_courses",table=>{
             table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
-            table.uuid("teacher_id").notNullable().references("id").inTable("teacher").onDelete("CASCADE");
-            table.uuid("course_id").notNullable().references("id").inTable('course').onDelete("CASCADE");
-            table.unique(["teacher_id","course_id"]);
+            table.uuid("school_id").notNullable().references("id").inTable("school").onDelete("CASCADE");
+            table.uuid("teacher_id").notNullable().references("id").inTable("users").onDelete("CASCADE");
+            table.uuid("course_id").notNullable().references("id").inTable('school_course').onDelete("CASCADE");
+            table.unique(["teacher_id","course_id","school_id"]);
+            table.index(["school_id"]);
             table.timestamps(true,true);
         })
     }

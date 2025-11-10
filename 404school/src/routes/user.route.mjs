@@ -5,7 +5,7 @@ import { checkAuth } from '../middleware/checkAuth.middleware.mjs';
 
 
 export default async function userRouter(fastify, options) {
-    const usercontroller = new UserController();
+    const usercontroller = new UserController(fastify);
     fastify.post("/register", {
         schema: {
             body: {

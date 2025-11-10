@@ -22,6 +22,18 @@ const env_constant = {
     jwt:{
         secret:process.env.JWT_SECRET,
         issuer:"404"
+    },
+    gmail:{
+        pass:process.env.GMAIL_CLIENT_SECRET,
+        user:process.env.GMAIL_CLIENT
+    },
+    VERIFY_EMAIL_URL:process.env.VERIFY_EMAIL_URL,
+    REDIS:{
+        redis_server:{
+            host:process.env.REDIS_HOST,
+            port:process.env.REDIS_PORT,
+            pass:process.env.REDIS_PASS
+        }
     }
 }
 

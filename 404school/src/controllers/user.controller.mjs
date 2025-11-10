@@ -3,14 +3,17 @@ import db from "../db/index.mjs";
 import asyncHandler from "../utils/asyncHandler.mjs";
 import { saveUploadToTemp } from "../middleware/saveUpload.middleware.mjs";
 import uploadAndCleanup from "../utils/cloudupstream.mjs";
-import ApiError from "../utils/ApiError.mjs";
-
+import ApiError, { DUPLICATE, NOTFOUND } from "../utils/ApiError.mjs";
+import mailer from "../service/emailInstance.mjs";
+import { tokenGen,hashify } from "../utils/tokenGen.mjs";
+import env_constant from "../../env.config.mjs";
+import Cache from "../utils/cache.mjs";
 
 
 class UserController {
-    constructor(){
+    constructor(fastify){
         this.userdb = new UserDb(db);
-
+        this.authCache = new Cache(fastify,"auth");
         //binding;
         this.register = this.register.bind(this);
         this.update = this.update.bind(this);
@@ -28,7 +31,14 @@ class UserController {
             full_name:full_name.toUpperCase(),
             role:role!=="admin"?role:"student"
         }
-        await this.userdb.createUser(email,payload);
+        const isUserExist = await this.userdb.isEmail(email);
+        if(isUserExist) throw new DUPLICATE({event:"REGISTER",message:"Already Exist!"});
+        const user = await this.userdb.createUser(payload);
+        const verify_token = tokenGen(32);
+        const hashify_verify_token = hashify(verify_token);
+        const verify_url = `${env_constant.VERIFY_EMAIL_URL}?token=${verify_token}`;
+        await this.authCache.set(user.id,900,"USER",hashify_verify_token);
+        mailer.send(email,"verify-email",{"__LINK__":verify_url,"__SUPPORT__":"nimesht964@gmail.com","__EXPIRE__":"15 min"})
         return reply.status(201).send({
             status:"ok"
         })
@@ -64,9 +74,8 @@ class UserController {
             throw new ApiError({message:"invalid params!",status:400,isKnown:true,event:"UPDATE"})
         }
 
-        await this.userdb.update(userId,payload);
-
-
+        const user = await this.userdb.update(userId,payload);
+        if(!user) throw new NOTFOUND({event:"UPDATE",message:"user not found!"});
         return {
             status:"ok"
         }
@@ -75,6 +84,7 @@ class UserController {
     read = asyncHandler(async(req,reply)=>{
         const {id:userId} = req.user;
         const user = await this.userdb.read(userId);
+        if(!user) throw new NOTFOUND({event:"READ",message:"user not found!"});
         return {
             status:"ok",
             data:user
@@ -83,7 +93,8 @@ class UserController {
 
     destroy = asyncHandler(async(req,reply)=>{
         const {id:userId} = req.user;
-        await this.userdb.destroy(userId);
+        const user = await this.userdb.destroy(userId);
+        if(!user) throw new NOTFOUND({event:"DESTROY",message:"user not found!"});
         return {
             status:"ok"
         }
@@ -91,7 +102,8 @@ class UserController {
 
     search = asyncHandler(async(req,reply)=>{
         const {query,limit,page} = req.query;
-        const users = await this.userdb.search(query,limit,page);
+        const offset = (page-1)*limit;
+        const users = await this.userdb.search(query,limit,offset);
         return {
             status:"ok",
             data:users

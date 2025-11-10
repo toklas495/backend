@@ -30,4 +30,50 @@ class ApiError extends Error{
     }
 }
 
+
+export class FORBIDDEN extends ApiError{
+    constructor({event,message="access forbidden!"}){
+        super({message,isKnown:true,event,status:403});
+    }
+}
+
+export class NOTFOUND extends ApiError{
+    constructor({event,message="not found!"}){
+        super({message,isKnown:true,event,status:404});
+    }
+}
+
+export class UNAUTHENTICATED extends ApiError{
+    constructor({event,message="unAuthorized action!"}){
+        super({message,isKnown:true,event,status:401});
+    }
+}
+
+export class BADREQUEST extends ApiError{
+    constructor({event,message="bad action!"}){
+        super({message,isKnown:true,event,status:400})
+    }
+}
+
+
+export class DUPLICATE extends ApiError{
+    constructor({event,message="already exist!"}){
+        super({message,isKnown:true,event,status:409})
+    }
+}
+
+
+export class RATELIMIT extends ApiError{
+    constructor({event,message="rate limit error"}){
+        super({message,isKnown:true,event,status:429})
+    }
+}
+
+export class INTERNAL_SERVER_ERROR extends ApiError{
+    constructor({event="unknown",layer="unknown",stack}){
+        super({event,layer,stack});
+    }
+    
+}
+
 export default ApiError;

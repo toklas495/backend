@@ -1,8 +1,11 @@
 import SchoolController from "../controllers/school.controller.mjs";
+import CourseController from "../controllers/course.controller.mjs";
 import { checkAuth } from "../middleware/checkAuth.middleware.mjs";
+
 
 export default async function schoolRoute(fastify, options) {
     const schoolcontroller = new SchoolController();
+    const coursecontroller = new CourseController();
 
     fastify.post("/new", {
         preHandler: [checkAuth],
@@ -148,7 +151,7 @@ export default async function schoolRoute(fastify, options) {
     },schoolcontroller.update);
 
 
-    fastify.post("/:schoolId/teacher",{schema:{
+    fastify.post("/:schoolId/teacher",{preHandler:[checkAuth],schema:{
         body:{
             type:"object",
             required:["qualification"],
@@ -183,5 +186,138 @@ export default async function schoolRoute(fastify, options) {
             }
         }
     }},schoolcontroller.applyForTeacher);
+
+    fastify.post("/:schoolId/course/new",{preHandler:[checkAuth],schema:{
+        params:{
+            type:"object",
+            required:["schoolId"],
+            properties:{
+                schoolId:{type:"string",format:"uuid"}
+            }
+        },
+        body:{
+            type:"object",
+            required:["name","description"],
+            additionalProperties:false,
+            properties:{
+                name:{type:"string",minLength:3,maxLength:300},
+                description:{type:"string",minLength:3,maxLength:1000}
+            }
+        },
+        response:{
+            200:{
+                type:"object",
+                properties:{
+                    status:{type:"string"},
+                    data:{
+                        type:"object",
+                        properties:{
+                            id:{type:"string",format:"uuid"},
+                            name:{type:"string"},
+                            school_id:{type:"string"},
+                            teacher_id:{type:"string"},
+                            description:{type:"string"},
+                            created_at:{type:"string"}
+                        }
+                    }
+                }
+            }
+        }
+    }},coursecontroller.addCourse);
+
+    fastify.delete("/:schoolId/course/:courseId",{
+        schema:{
+            params:{
+                type:"object",
+                properties:{
+                    schoolId:{type:"string",format:"uuid"},
+                    courseId:{type:'string',format:"uuid"}
+                }
+            },
+            response:{
+                200:{
+                    type:"object",
+                    properties:{
+                        status:{type:"string"}
+                    }
+                }
+            }
+        }
+    },coursecontroller.destroyCourse);
+
+
+
+    fastify.post("/:schoolId/course/:courseId/add",{
+        preHandler:[checkAuth],
+        schema:{
+            body:{
+                type:"object",
+                required:["name","start_time","end_time","start_date","end_date","plan"],
+                properties:{
+                    name:{type:"string",minLength:10,maxLength:1000},
+                    start_time:{type:"string",format:"time"},
+                    end_time:{type:"string",format:"time"},
+                    start_date:{type:"string",format:"date"},
+                    end_date:{type:"string",format:"date"},
+                    plan:{type:"string"}
+                },
+                additionalProperties:false
+            },response:{
+                200:{
+                    type:"object",
+                    properties:{
+                        status:{type:"string"},
+                        data:{
+                            type:"object",
+                            properties:{
+                                id:{type:"string",format:"uuid"}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },schoolcontroller.addBatch)
+
+
+    fastify.post("/:schoolId/course/:courseId/student",{
+        preHandler:[checkAuth],
+        schema:{
+            params:{
+                type:"object",
+                additionalProperties:false,
+                required:["schoolId","courseId"],
+                properties:{
+                    schoolId:{type:"string",format:"uuid"},
+                    courseId:{type:"string",format:"uuid"}
+                }
+            },
+            body:{
+                type:"object",
+                required:["batch_id"],
+                properties:{
+                    batch_id:{type:"string",format:"uuid"}
+                },
+                additionalProperties:false
+            }
+            ,response:{
+                200:{
+                    type:"object",
+                    properties:{
+                        status:{type:"string"},
+                        data:{
+                            type:"array",
+                            items:{
+                                type:"object",
+                                properties:{
+                                    id:{type:"string"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },schoolcontroller.addStudent);
     
 }

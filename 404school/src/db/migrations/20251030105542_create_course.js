@@ -8,9 +8,8 @@ exports.up = async (knex) => {
     if(!isExist){
         return knex.schema.createTable("course",table=>{
             table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
-            table.string("code",20).unique().notNullable();
-            table.string("name",100).notNullable();
-            table.text("description");
+            table.string("name",100).unique().notNullable();
+            table.text("default_description");
             table.boolean("is_active").defaultTo(false);
             table.timestamps(true,true);
         })
@@ -22,5 +21,5 @@ exports.up = async (knex) => {
  * @returns { Promise<void> }
  */
 exports.down = async (knex) => {
-  return knex.schema.dropTableIfExists("course");
+    return knex.schema.dropTableIfExists("course");
 };

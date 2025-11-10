@@ -11,18 +11,33 @@ class School{
         this.update = this.update.bind(this);
         this.search = this.search.bind(this);
         this.insertTeacher = this.insertTeacher.bind(this);
+        this.readTeacher = this.readTeacher.bind(this);
+        this.insertBatch = this.insertBatch.bind(this);
+        this.read = this.read.bind(this);
     }
 
 
+    async insertBatch(payload){
+        try{
+            const [batch] =  await this.db("batch_course")
+            .insert(payload).returning("*");
+            return batch;
+        }catch(error){
+             if(error.code==="23505"){
+                throw new ApiError({message:"alread exist!",event:"BATCH",status:404,isKnown:true});
+            }else if(error.code==="23503"){
+                throw new ApiError({message:"user not found!",event:"BATCH",status:409,isKnown:true});
+            }
+            throw error;
+        }
+    }
+
     async registerSchool({principal_id,name,phone,email,address}){
         try{
-            
-            const user = await this.db("users").where({id:principal_id}).first();
-            if(!user || user.role!=="principal") throw new ApiError({message:"user not found",event:"REGISTRATION",status:404,isKnown:true})
             const [school] = await this.db("school")
             .insert({principal_id,name,phone,email,address})
             .returning("id");
-            return school.id;
+            return school;
         }catch(error){
             if(error.code==="23505"){
                 throw new ApiError({message:"alread exist!",event:"REGISTRATION",status:409,isKnown:true});
@@ -35,8 +50,6 @@ class School{
 
     async uploadLogo(principal_id,school_id,payload){
         try{
-            const user = await this.db("users").where({id:principal_id}).first();
-            if(!user || user.role!=="principal") throw new ApiError({message:"user not found",event:"REGISTRATION",status:404,isKnown:true})
             const [school] = await this.db("school").update(payload).where({id:school_id,principal_id}).returning("*");
             if(!school) throw new ApiError({message:"school not found!",status:404,event:"UPLOAD",isKnown:true})
         }catch(error){
@@ -55,6 +68,28 @@ class School{
                             .where({id:schoolId})
                             .first();
             return school;
+        }catch(error){
+            throw error;
+        }
+    }
+
+    async readWithPrincipal(schoolId){
+        try{
+            return await this.db("school as s")
+                        .select(
+                            "s.id",
+                            "s.name as school_name",
+                            "s.address",
+                            "s.phone",
+                            "s.email",
+                            "s.logo_uri",
+                            "s.principal_id",
+                            "u.username as principal_username",
+                            "u.full_name as principal_full_name",
+                            "s.created_at"
+                        ).leftJoin("users as u","u.id","s.principal_id")
+                        .where("s.id",schoolId)
+                        .first();
         }catch(error){
             throw error;
         }
@@ -105,8 +140,6 @@ class School{
 
     async insertTeacher({teacher_id,school_id,qualification}){
         try{
-            const school = await this.db("school").where({id:school_id}).first();
-            if(!school || school.status!=="active") throw new ApiError({message:"school not found!",event:"INSERT_TEACHER",isKnown:true,status:404})
             const [teacher] = await this.db("teacher")
             .insert({teacher_id,school_id,qualification})
             .returning("*");
@@ -122,6 +155,17 @@ class School{
             throw error;
         }
     }
+
+    async readTeacher(payload){
+        try{
+            return await this.db("teacher")
+                        .where(payload)
+                        .first();
+        }catch(error){
+            throw error;
+        }
+    }
+
 }
 
 export default School;
