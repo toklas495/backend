@@ -197,11 +197,14 @@ export default async function schoolRoute(fastify, options) {
         },
         body:{
             type:"object",
-            required:["name","description"],
+            required:["name","description","amount"],
             additionalProperties:false,
             properties:{
                 name:{type:"string",minLength:3,maxLength:300},
-                description:{type:"string",minLength:3,maxLength:1000}
+                description:{type:"string",minLength:3,maxLength:1000},
+                amount:{type:"integer",minimum:0,maximum:5000,default:0},
+                currency:{type:"string",minLength:3,maxLength:3,default:"INR"},
+                level:{type:"string",enum:["beginner","intermediate","advanced"],default:"beginner"}
             }
         },
         response:{
@@ -252,14 +255,15 @@ export default async function schoolRoute(fastify, options) {
         schema:{
             body:{
                 type:"object",
-                required:["name","start_time","end_time","start_date","end_date","plan"],
+                required:["batch_name","timing","class_start_time","class_end_time","start_date","end_date","max_student"],
                 properties:{
-                    name:{type:"string",minLength:10,maxLength:1000},
-                    start_time:{type:"string",format:"time"},
-                    end_time:{type:"string",format:"time"},
+                    batch_name:{type:"string",minLength:10,maxLength:1000},
+                    timing:{type:"string",enum:["morning","arternoon","evening","weekend"],default:"morning"},
+                    class_start_time:{type:"string",format:"time"},
+                    class_end_time:{type:"string",format:"time"},
                     start_date:{type:"string",format:"date"},
                     end_date:{type:"string",format:"date"},
-                    plan:{type:"string"}
+                    max_student:{type:"integer",default:30,maximum:5000,minimum:30}
                 },
                 additionalProperties:false
             },response:{
@@ -278,46 +282,4 @@ export default async function schoolRoute(fastify, options) {
             }
         }
     },schoolcontroller.addBatch)
-
-
-    fastify.post("/:schoolId/course/:courseId/student",{
-        preHandler:[checkAuth],
-        schema:{
-            params:{
-                type:"object",
-                additionalProperties:false,
-                required:["schoolId","courseId"],
-                properties:{
-                    schoolId:{type:"string",format:"uuid"},
-                    courseId:{type:"string",format:"uuid"}
-                }
-            },
-            body:{
-                type:"object",
-                required:["batch_id"],
-                properties:{
-                    batch_id:{type:"string",format:"uuid"}
-                },
-                additionalProperties:false
-            }
-            ,response:{
-                200:{
-                    type:"object",
-                    properties:{
-                        status:{type:"string"},
-                        data:{
-                            type:"array",
-                            items:{
-                                type:"object",
-                                properties:{
-                                    id:{type:"string"}
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },schoolcontroller.addStudent);
-    
 }

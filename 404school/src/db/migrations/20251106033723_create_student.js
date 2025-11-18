@@ -11,8 +11,9 @@ exports.up = async (knex) => {
         table.uuid("user_id").notNullable().references("id").inTable("users").onDelete("CASCADE");
         table.uuid("school_id").notNullable().references("id").inTable("school").onDelete("CASCADE");
         table.uuid("course_id").notNullable().references("id").inTable("school_course").onDelete("CASCADE");
+      
         table.uuid("batch_id").notNullable().references("id").inTable("batch_course").onDelete("CASCADE");
-        table.enum("status",["pending","active","suspend"]).defaultTo("pending");
+        table.enum("status",["pending", "active", "completed", "suspended", "expired"]).defaultTo("pending");
         table.timestamp("completed_at");
         table.timestamps(true,true);
 

@@ -29,6 +29,9 @@ export default async function (fastify, options) {
                                 school_id:{type:"string"},
                                 name:{type:"string"},
                                 amount:{type:"integer"},
+                                currency:{type:"string"},
+                                thumbnail_url:{type:"string"},
+                                level:{type:"string"},
                                 description:{type:"string"},
                                 created_at:{type:"string"},
                                 batches:{
@@ -38,7 +41,7 @@ export default async function (fastify, options) {
                                         properties:{
                                             id:{type:"string",format:"uuid"},
                                             teacher_id:{type:"string",format:"uuid"},
-                                            name:{type:"string"},
+                                            batch_name:{type:"string"},
                                             timing:{type:"string"},
                                             start_date:{type:"string"},
                                             end_date:{type:"string"},
@@ -76,9 +79,14 @@ export default async function (fastify, options) {
                                 id: {type:"string",format:"uuid"},
                                 name: {type:"string"},
                                 description: {type:"string"},
+                                amount:{type:"integer"},
+                                currency:{type:"string"},
+                                level:{type:"string"},
+                                thumbnail_url:{type:"string"},
                                 school_id: {type:'string',fromat:"uuid"},
                                 teacher_id: {type:"string",format:"uuid"},
-                                created_at: {type:"string"}
+                                created_at: {type:"string"},
+                                updated_at:{type:"string"}
                             }
                         }
                     }
@@ -108,6 +116,9 @@ export default async function (fastify, options) {
                                 name:{type:"string"},
                                 description:{type:"string"},
                                 amount:{type:"integer"},
+                                level:{type:"string"},
+                                thumbnail_url:{type:"string"},
+                                currency:{type:"string"},
                                 school_id:{type:"string",format:"uuid"},
                                 teacher_id:{type:"string",format:"uuid"},
                                 created_at:{type:"string",format:"date-time"},

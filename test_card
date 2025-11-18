@@ -1,0 +1,26 @@
+Visa
+4111 1111 1111 1111
+CVV: 123
+Expiry: any future
+
+Mastercard
+5555 5555 5555 4444
+CVV: 123
+Expiry: any future
+
+American Express
+3714 496353 98431
+CVV: 1234
+Expiry: any future
+
+International Card
+3530 1113 3330 0000
+CVV: 123
+Expiry: any future
+Mastercard	2305 3242 5784 8228	Random CVV	Any future date
+Visa	4386 2894 0766 0153	Random CVV	Any future date
+
+Mastercard	5421 1393 0609 0628
+5105 1051 0510 5100
+5104 0600 0000 0008	Random CVV	Any future date
+Visa	4012 8888 8888 1881	Random CVV	Any future date

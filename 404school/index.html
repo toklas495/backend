@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Razorpay Payment Demo</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+
+<body>
+    <button id="payBtn">Pay Now</button>
+
+    <script>
+        document.getElementById("payBtn").onclick = async function () {
+            // 1. Call your backend API to get order info
+            const res = await fetch("http://localhost:3000/api/v1/checkout/create-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk0OWE5MTg1LTc1YjYtNDgxYS1hMzNjLWY0ZDBmNDNhMWRmYSIsImlhdCI6MTc2MzM1MzQxMSwiZXhwIjoxNzYzMzU0MzExLCJpc3MiOiI0MDQiLCJzdWIiOiI5NDlhOTE4NS03NWI2LTQ4MWEtYTMzYy1mNGQwZjQzYTFkZmEiLCJqdGkiOiIxMzJkMzBhOWM0YjhlYjRmIn0.zvJWANC1sFLj5YaBDZQxvBYtVensvCtgLD3Ugi4-Uo8"
+                },
+                body: JSON.stringify({
+                    "course_id": "3cfe2f68-9315-40c4-b96c-d8913a8316f5",
+                    "batch_id": "4864af38-1286-4587-ac45-4fce3ed68e97"
+                })
+            });
+            const data = (await res.json()).data;
+
+            if(!res.ok){
+                console.log("sorry please authenticate!");
+                return;
+            }
+            // Example:
+            // data = { razorPayOrderId, amount, currency, paymentId }
+
+            const options = {
+                key: "rzp_test_RdvTx16k4m18Co", // Replace
+                amount: data.amount,         // in paise (ex: 50000 = ₹500)
+                currency: data.currency,
+                name: "404school",
+                description: "Test Transaction",
+                order_id: data.razorPayOrderId,
+
+                handler: function (response) {
+                    // Razorpay returns:
+                    // response.razorpay_payment_id
+                    // response.razorpay_order_id
+                    // response.razorpay_signature
+
+                    // 2. Send to backend for verification
+                    fetch("http://localhost:3000/api/v1/checkout/verify-payment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json",
+                            "Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk0OWE5MTg1LTc1YjYtNDgxYS1hMzNjLWY0ZDBmNDNhMWRmYSIsImlhdCI6MTc2MzM1MzQxMSwiZXhwIjoxNzYzMzU0MzExLCJpc3MiOiI0MDQiLCJzdWIiOiI5NDlhOTE4NS03NWI2LTQ4MWEtYTMzYy1mNGQwZjQzYTFkZmEiLCJqdGkiOiIxMzJkMzBhOWM0YjhlYjRmIn0.zvJWANC1sFLj5YaBDZQxvBYtVensvCtgLD3Ugi4-Uo8"
+                         },
+                        body: JSON.stringify({...response,payment_id:data.paymentId})
+                    });
+
+                    alert("Payment Success! " + response.razorpay_payment_id);
+                },
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+        };
+    </script>
+</body>
+
+</html>

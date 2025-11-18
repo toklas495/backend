@@ -22,6 +22,9 @@ class Course{
                                 "c.name as name",
                                 "sc.description as description",
                                 "sc.amount as amount",
+                                "sc.level as level",
+                                "sc.thumbnail_url as thumbnail_url",
+                                "sc.currency as currency",
                                 "sc.created_at as created_at"
                             ).innerJoin("school_course as sc","sc.course_id","c.id")
                             .whereILike("c.name",`%${query}%`)
@@ -61,7 +64,11 @@ class Course{
                         "sc.id",
                         "sc.name",
                         "sc.description",
+                        "sc.currency",
+                        "sc.level",
+                        "sc.thumbnail_url",
                         "sc.amount",
+                        "sc.currency",
                         "sc.school_id",
                         "tc.teacher_id as teacher_id",
                         "sc.created_at",
@@ -75,7 +82,17 @@ class Course{
     }
 
 
-    async insertCourse({teacher_id,school_id,name,description}){
+    async insertCourse({
+        teacher_id,
+        school_id,
+        name,
+        description,
+        amount,
+        currency,
+        thumbnail_url,
+        level,
+        
+    }){
         const trx = await this.db.transaction();
         try{
             const [course] = await trx("course")
@@ -83,13 +100,18 @@ class Course{
                             .onConflict("name")
                             .merge()
                             .returning("*");
-            const [school_course] = await trx("school_course")
-            .insert({
+            const payload = {
                 course_id:course.id,
                 school_id,
                 name,
                 description:description||course.default_description,
-            }).returning("*");
+                amount,
+                currency,
+                ...(thumbnail_url!==undefined&&thumbnail_url),
+                level
+            }
+            const [school_course] = await trx("school_course")
+            .insert(payload).returning("*");
 
 
             await trx("teacher_courses")

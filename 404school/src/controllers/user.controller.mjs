@@ -1,4 +1,5 @@
 import UserDb from "../models/user.model.mjs";
+import Student from '../models/student.model.mjs';
 import db from "../db/index.mjs";
 import asyncHandler from "../utils/asyncHandler.mjs";
 import { saveUploadToTemp } from "../middleware/saveUpload.middleware.mjs";
@@ -13,6 +14,7 @@ import Cache from "../utils/cache.mjs";
 class UserController {
     constructor(fastify){
         this.userdb = new UserDb(db);
+        this.studentdb = new Student(db);
         this.authCache = new Cache(fastify,"auth");
         //binding;
         this.register = this.register.bind(this);
@@ -20,6 +22,7 @@ class UserController {
         this.read = this.read.bind(this);
         this.destroy = this.destroy.bind(this);
         this.search = this.search.bind(this);
+        this.getStudentCourse = this.getStudentCourse.bind(this);
     }
 
     register = asyncHandler(async (req,reply)=>{
@@ -107,6 +110,16 @@ class UserController {
         return {
             status:"ok",
             data:users
+        }
+    })
+
+
+    getStudentCourse = asyncHandler(async(req,reply)=>{
+        const {id:user_id} = req.user||{};
+        const student_course = await this.studentdb.getStudentCourse(user_id);
+        return {
+            status:"ok",
+            data:student_course
         }
     })
 }

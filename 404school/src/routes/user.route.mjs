@@ -128,6 +128,38 @@ export default async function userRouter(fastify, options) {
             }
         }
     },usercontroller.search)
+
+
+    fastify.get("/course",{
+        preHandler:[checkAuth],
+        schema:{
+            response:{
+                200:{
+                    type:"object",
+                    properties:{
+                        status:{type:"string"},
+                        data:{
+                            type:"array",
+                            items:{
+                                type:"object",
+                                properties:{
+                                    id:{type:"string"},
+                                    school_id:{type:'string'},
+                                    course_id:{type:'string'},
+                                    batch_id:{type:'string'},
+                                    course_title:{type:"string"},
+                                    thumbnail_url:{type:"string"},
+                                    batch_name:{type:"string"},
+                                    class_start_time:{type:'string'},
+                                    class_end_time:{type:'string'},
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },usercontroller.getStudentCourse);
 }
 
 

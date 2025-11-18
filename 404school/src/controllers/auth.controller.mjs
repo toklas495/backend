@@ -9,7 +9,6 @@ import mailer from '../service/emailInstance.mjs';
 
 
 
-
 class AuthController{
     constructor(fastify){
         this.authdb = new AuthModel(db);

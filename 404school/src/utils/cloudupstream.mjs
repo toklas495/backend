@@ -1,5 +1,5 @@
 import fs from 'fs';
-import cloudinary from './cloudinary.mjs';
+import cloudinary from '../config/cloudinary.mjs';
 import { unlink } from 'fs/promises';
 
 function uploadStreamToCloudinary(localFilePath,folder="user_profile"){

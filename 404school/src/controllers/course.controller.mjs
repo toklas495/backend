@@ -21,7 +21,7 @@ class CourseController {
     addCourse = asyncHandler(async(req,reply)=>{
         // add course
         const {id:teacher_id} = req.user||{};
-        const {name,description} = req.body;
+        const {name,description,amount,currency,thumbnail_url,level} = req.body;
         const {schoolId:school_id} = req.params;
         const user = await this.userDb.read(teacher_id);
         if(!["principal","teacher"].some((role)=>role===user.role)) throw new ApiError({message:"school not found!",status:404,event:"ADD_COURSE",isKnown:true})
@@ -32,7 +32,16 @@ class CourseController {
             const school = await this.schoolDb.read(school_id);
             if(!school || school.principal_id!==teacher_id) throw new ApiError({message:"school not found",isKnown:true,status:404,event:"ADD_COURSE"})
         }
-        const course = await this.courseDb.insertCourse({teacher_id,school_id,name,description});
+        const course = await this.courseDb.insertCourse({
+            teacher_id,
+            school_id,
+            name,
+            description,
+            amount,
+            currency,
+            thumbnail_url,
+            level
+        });
         return {
             status:"ok",
             data:{
@@ -86,6 +95,9 @@ class CourseController {
                 name:course.name,
                 description:course.description,
                 amount:course.amount,
+                currency:course.currency,
+                level:course.level,
+                thumbnail_url:course.thumbnail_url,
                 school_id:course.school_id,
                 teacher_id:course.teacher_id,
                 created_at:course.created_at,
@@ -130,6 +142,9 @@ class CourseController {
                 name:course.name,
                 description:course.description,
                 amount:course.amount,
+                currency:course.currency,
+                thumbnail_url:course.thumbnail_url,
+                level:course.level,
                 batches,
                 created_at:course.created_at
             }

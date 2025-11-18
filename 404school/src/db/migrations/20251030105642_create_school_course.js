@@ -12,7 +12,10 @@ exports.up = async (knex) => {
         table.uuid("course_id").notNullable().references("id").inTable("course").onDelete("CASCADE");
         table.string("name",100).notNullable();
         table.text('description')
-        table.float("amount").defaultTo(0.00);
+        table.decimal("amount",10,2).notNullable().defaultTo(0.00);
+        table.string("currency",3).defaultTo("INR");
+        table.string("thumbnail_url")
+        table.enum("level",["beginner","intermediate","advanced"]).defaultTo("biginner");
         table.boolean("is_active").defaultTo(false);
         table.timestamps(true,true);
         table.unique(["school_id","course_id"]);

@@ -23,7 +23,6 @@ class SchoolController{
         this.search = this.search.bind(this);
         this.applyForTeacher = this.applyForTeacher.bind(this);
         this.addBatch = this.addBatch.bind(this);
-        this.addStudent = this.addStudent.bind(this);
     }
 
 
@@ -32,7 +31,7 @@ class SchoolController{
         const {name,phone,email,address} = req.body; 
         const user = await this.userdb.read(principal_id);
         if(!user || user.role!=="principal") throw new NOTFOUND({event:"REGISTERED_SCHOOL",message:"user not found or authorized"})
-        const schoolId = await this.schooldb.registerSchool(
+        const school = await this.schooldb.registerSchool(
             {
                 principal_id,
                 name:name.toUpperCase(),
@@ -41,10 +40,11 @@ class SchoolController{
                 address:address.toLowerCase()
             }
         )
+
         return {
             status:"ok",
             data:{
-                id:schoolId
+                id:school.id
             }
         }
     })
@@ -146,7 +146,14 @@ class SchoolController{
     addBatch = asyncHandler(async(req,reply)=>{
         const {schoolId:school_id,courseId:course_id} = req.params;
         const {id:user_id} = req.user;
-        const {name,start_time,end_time,start_date,end_date,plan} = req.body;
+        const {
+            batch_name,
+            timing,
+            class_start_time,
+            class_end_time,
+            start_date,
+            end_date,
+            max_student} = req.body;
         const user = await this.userdb.read(user_id);
         if(!user || !["teacher","principal","admin"].some(role=>role===user.role)) throw new FORBIDDEN({event:"ADD_BATCH",message:"you are not teacher!"})
         if(user.role==="principal"){
@@ -157,11 +164,17 @@ class SchoolController{
             if(!teacher) throw new NOTFOUND({event:"ADD_BATCH",message:"school not found!"});
         } 
 
-        if(start_time>end_time|| start_date>end_date) throw new BADREQUEST({event:"ADD_BATCH",message:"how ending is small as compared to starting!"})
+        if(class_start_time>class_end_time|| start_date>end_date) throw new BADREQUEST({event:"ADD_BATCH",message:"how ending is small as compared to starting!"})
          
-        const timing = `${start_time}-${end_time}`;
         const batch = await this.schooldb.insertBatch({
-            name,timing,start_date,end_date,plan,course_id,school_id,teacher_id:user_id
+            batch_name,
+            timing,
+            class_start_time,
+            class_end_time,
+            start_date,
+            end_date,
+            course_id,
+            max_student
         })
         return {
             status:"ok",
@@ -170,25 +183,7 @@ class SchoolController{
             }
         }
     })
-
-
-    addStudent = asyncHandler(async(req,reply)=>{
-        const {schoolId:school_id,courseId:course_id} = req.params;
-        const {id:user_id} = req.user||{};
-        const {batch_id} = req.body;
-        const user = await this.userdb.read(user_id);
-        if(!user || !["student","admin","principal"].some(role=>role===user.role)){
-            throw new FORBIDDEN({event:"ADD_STUDENT"});
-        }
-        const batch = await this.coursedb.readBatchWithId(batch_id);
-        if(!batch || batch.school_id!==school_id || batch.course_id!==course_id || batch.start_date<new Date()) throw new NOTFOUND({event:"ADD_STUDENT",message:"batch not found!"});
-        const total_student = await this.studentdb.countStudents({batch_id});
-        if(total_student>batch.capacity) throw new ApiError({message:"limit exceed! sorry you can try another batch...",event:"ADD_STUDENT",isKnown:true,status:400});
-        await this.studentdb.insertStudent({user_id,school_id,course_id,batch_id});
-        return {
-            status:"ok"
-        }
-    })
+    
 }
 
 export default SchoolController;

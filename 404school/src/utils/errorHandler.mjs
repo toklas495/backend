@@ -30,6 +30,7 @@ export default async function errorHandler(error,req,reply){
     console.log({
         layer,event,stack
     })
+    console.log(error);
     return reply.status(500).send({
         success:false,
         code:"INTERNAL_SERVER_ERROR",

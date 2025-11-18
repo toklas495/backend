@@ -8,16 +8,19 @@ exports.up = async (knex) => {
   if(!isExist){
     return knex.schema.createTable("batch_course",(table)=>{
         table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
-        table.uuid("school_id").notNullable().references("id").inTable("school").onDelete("CASCADE");
-        table.uuid("teacher_id").notNullable().references("id").inTable("users").onDelete("CASCADE");
         table.uuid("course_id").notNullable().references("id").inTable("school_course").onDelete("CASCADE");
-        table.string("name").notNullable(); // Example: "Morning Batch", "Batch A"
-        table.string("timing").nullable();  // Example: "10:00 AM - 12:00 PM"
+        table.string("batch_name",100).notNullable();
+        table.enum("timing",["morning","afternoon","evening","weekend"]);
         table.date("start_date").notNullable();
-        table.date("end_date").nullable();
-        table.text("plan").nullable();
-        table.integer("capacity").defaultTo(100);
+        table.date("end_date");
+        table.time("class_start_time");
+        table.time("class_end_time");
+        table.integer("max_student").defaultTo(30);
+        table.enum("status",["upcoming","ongoing","completed","cancelled"]).defaultTo("upcoming");
+
         table.timestamps(true,true);
+
+        table.index(["course_id","start_date"]);
     })
   }     
 };
