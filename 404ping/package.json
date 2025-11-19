@@ -6,7 +6,10 @@
   "author": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build":"chmod +x app.mjs && npm link"
+  },
+  "bin":{
+    "404ping":"./app.mjs"
   },
   "dependencies": {
     "yargs": "^18.0.0"
