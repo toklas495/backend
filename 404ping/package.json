@@ -6,12 +6,13 @@
   "author": "",
   "main": "index.js",
   "scripts": {
-    "build":"chmod +x app.mjs && npm link"
+    "build": "chmod +x app.mjs && npm link"
   },
-  "bin":{
-    "404ping":"./app.mjs"
+  "bin": {
+    "404ping": "./app.mjs"
   },
   "dependencies": {
+    "chalk": "^5.6.2",
     "yargs": "^18.0.0"
   }
 }

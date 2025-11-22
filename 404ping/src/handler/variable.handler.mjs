@@ -1,6 +1,6 @@
-import {setVariable} from '../utils/fileHandle.mjs';
+import {setVariable,unSetVar} from '../utils/fileHandle.mjs';
 
-export default async function setVariableHandler(argv){
+export  async function setVariableHandler(argv){
     try{
         const {variables,global} = argv;
         const varObject = {};
@@ -12,6 +12,17 @@ export default async function setVariableHandler(argv){
             await setVariable(varObject);
         }
     }catch(error){
-        console.error(error);
+        throw error;
+    }
+}
+
+export async function unSetVariableHandler(argv) {
+    try{
+        const {variables} = argv;
+        if(variables&&variables.length){
+            await unSetVar(variables);
+        }
+    }catch(error){
+        throw error;
     }
 }

@@ -41,6 +41,8 @@ class Request{
 
     async send(){
         return new Promise((resolve,reject)=>{
+            const start = performance.now();
+            
             const req = this.http.request(this.options,(res)=>{
                 let data = [];
                 res.on('data',(chunk)=>{
@@ -48,25 +50,39 @@ class Request{
                 })
 
                 res.on("end",()=>{
-                    const body = Buffer.concat(data).toString();
-
+                    const ms = performance.now()-start;
+                    const duration = ms<1000?`${ms.toFixed(2)}ms`:`${(ms/1000).toFixed(2)}s`
+                    const raw = Buffer.concat(data);
+                    const body = raw.toString();
                     //try to parse json automatically
+                    let parsedJson = null;
                     try{
-                        resolve({
-                            status:res.statusCode,
-                            headers:res.headers,
-                            json:JSON.parse(body)
-                        })
-                    }catch{
-                        resolve({
-                            status:res.statusCode,
-                            headers:res.headers,
-                            body:body
-                        })
-                    }
+                        parsedJson = JSON.parse(body);
+                    }catch{};
+                    resolve({
+                        status:res.statusCode,
+                        message:res.statusMessage,
+                        httpVersion:res.httpVersion,
+                        rawHeaders:res.rawHeaders,
+                        headers:res.headers,
+                        body,
+                        json:parsedJson,
+                        duration,
+                        size:{
+                            bodyBytes:raw.length,
+                            headersBytes:Buffer.byteLength(JSON.stringify(res.headers)),
+                            totalBytes:raw.length+Buffer.byteLength(JSON.stringify(res.headers))
+                        },
+                        request:{
+                            method:this.options.method,
+                            url:this.options.path,
+                            headers:this.options.headers,
+                            payload:this.payload
+                        }
+                    })
                 });
             })
-            req.on("error",resolve);
+            req.on("error",reject);
             if(this.payload) req.write(this.payload);
 
             req.end()
