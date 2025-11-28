@@ -4,6 +4,7 @@ import ApiError from '../utils/ApiError.mjs';
 
 export  async function authMiddleware(req,reply){
         const authorization_header = req.headers["authorization"];
+        console.log(authorization_header)
         if(!authorization_header) return;
         const header_parts = authorization_header.trim().split(" ");
         try{
